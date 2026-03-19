@@ -18,6 +18,8 @@ Windows 11 WPF app that connects to a Linux host over **SSH** (username and pass
 
 CI: GitHub Actions workflow `.github/workflows/ci.yml` builds the solution on `windows-latest` with .NET 8.
 
+**Downloads:** [GitHub Releases](https://github.com/AtticusG3/docker-script-reloader/releases) ship a self-contained **win-x64** zip per tagged version (no separate .NET install required).
+
 ## Requirements
 
 - Windows 11 (or Windows with .NET 8 desktop runtime)
