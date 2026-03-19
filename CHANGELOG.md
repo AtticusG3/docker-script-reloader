@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-03-20
+
 ### Changed
 
 - CI: `actions/checkout` v6, `actions/setup-dotnet` v5 (Dependabot-aligned).
@@ -17,5 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial public-ready release baseline: WPF app, SSH password auth, Docker list/restart, remembered session (DPAPI), configuration via appsettings and user secrets.
 
-[Unreleased]: https://github.com/AtticusG3/docker-script-reloader/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/AtticusG3/docker-script-reloader/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.1
 [1.0.0]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.0
