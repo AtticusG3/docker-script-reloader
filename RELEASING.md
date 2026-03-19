@@ -16,7 +16,7 @@ This project uses **Semantic Versioning 2.0** ([semver.org](https://semver.org/)
 
 3. Update [CHANGELOG.md](CHANGELOG.md):
    - Move items from `[Unreleased]` into a new section `## [X.Y.Z] - YYYY-MM-DD`
-   - Update the compare links at the bottom (replace `OWNER/REPO` with the real GitHub `owner/repo`)
+   - Update the compare links at the bottom of `CHANGELOG.md` if the GitHub `owner/repo` changes (currently `AtticusG3/docker-script-reloader`)
 
 4. Commit with a conventional commit, for example:
 
