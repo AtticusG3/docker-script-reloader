@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- (nothing yet)
+- CI: `actions/checkout` v6, `actions/setup-dotnet` v5 (Dependabot-aligned).
 
 ## [1.0.0] - 2026-03-20
 
