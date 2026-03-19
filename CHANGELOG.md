@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-03-20
+
+### Added
+
+- Single self-contained **win-x64** portable publish (`portable-win-x64` profile): one `ScriptReloader.exe`, compression, no PDB; default config embedded; optional side-by-side `appsettings.json` overrides.
+
 ### Fixed
 
-- Startup: embedded `appsettings.json` is copied to a `MemoryStream` before `ConfigurationBuilder.Build()` runs (the manifest stream was previously disposed too early, which broke single-file and other published builds).
-
-### Changed
-
-- Windows releases are built as a **single self-contained `ScriptReloader.exe`** (publish profile `portable-win-x64`): compressed single-file, no PDB, default config embedded; optional `appsettings.json` beside the exe still overrides.
+- Startup: embedded `appsettings.json` is buffered to a `MemoryStream` before `ConfigurationBuilder.Build()` so the stream is not disposed too early (single-file and published builds start correctly).
 
 ## [1.0.1] - 2026-03-20
 
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial public-ready release baseline: WPF app, SSH password auth, Docker list/restart, remembered session (DPAPI), configuration via appsettings and user secrets.
 
-[Unreleased]: https://github.com/AtticusG3/docker-script-reloader/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/AtticusG3/docker-script-reloader/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.2
 [1.0.1]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.1
 [1.0.0]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.0
