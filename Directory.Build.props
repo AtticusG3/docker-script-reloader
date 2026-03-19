@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Semantic versioning (SemVer 2.0.0): MAJOR.MINOR.PATCH
+    - MAJOR: incompatible UX/API or behavior changes you want callers/users to notice
+    - MINOR: backward-compatible features
+    - PATCH: backward-compatible fixes
+    Bump these for releases; see RELEASING.md and CHANGELOG.md.
+  -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+</Project>

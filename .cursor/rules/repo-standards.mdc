@@ -1,0 +1,32 @@
+---
+description: SemVer, commits, security, and WPF constraints for Script Reloader
+alwaysApply: true
+---
+
+# Repository standards
+
+## Semantic versioning
+
+- Application version lives in `Directory.Build.props` as `Version` (SemVer 2.0: `MAJOR.MINOR.PATCH`).
+- For releases, also update `CHANGELOG.md` and follow `RELEASING.md`. Git tags use `v` prefix (e.g. `v1.2.3`).
+
+## Commits and change hygiene
+
+- Prefer [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): summary` with ASCII-only subject lines.
+- Keep diffs focused; avoid unrelated refactors in the same change as a feature or fix.
+- User-facing behavior changes should include a `CHANGELOG.md` entry under `[Unreleased]` unless purely internal.
+
+## Security
+
+- Never commit secrets (passwords, tokens, private keys, populated `.env`). Scan changes before suggesting commits.
+- Document operator-facing security tradeoffs in README or SECURITY when behavior affects remote systems (SSH, Docker).
+
+## Platform and output
+
+- This is a **WPF** app targeting **Windows**; build verification expects `dotnet build` on Windows for full UI compilation.
+- Prefer ASCII in operator-facing console or log strings where Windows code pages matter.
+
+## Docs for agents and humans
+
+- Coding agent entry point: `AGENTS.md`.
+- Contributor-facing: `CONTRIBUTING.md`.
