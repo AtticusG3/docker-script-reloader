@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Windows releases are built as a **single self-contained `ScriptReloader.exe`** (publish profile `portable-win-x64`): compressed single-file, no PDB, default config embedded; optional `appsettings.json` beside the exe still overrides.
+
 ## [1.0.1] - 2026-03-20
 
 ### Changed

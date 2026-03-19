@@ -33,6 +33,16 @@ This project uses **Semantic Versioning 2.0** ([semver.org](https://semver.org/)
 
 6. On GitHub, create a **Release** from that tag and paste the changelog section for that version into the release notes.
 
+## Portable Windows binary (single exe)
+
+Build a **self-contained** `win-x64` **single-file** executable (no PDB, embedded default `appsettings.json`):
+
+```powershell
+dotnet publish ScriptReloader/ScriptReloader.csproj -c Release -p:PublishProfile=portable-win-x64 -o ./artifacts/portable
+```
+
+Attach `ScriptReloader.exe` to the GitHub Release (optionally zip it for download consistency). This is one file; operators may add a local `appsettings.json` beside the exe to override defaults.
+
 ## SemVer quick reference
 
 - **MAJOR**: breaking changes operators must react to (UX, config file format, security defaults, etc.)

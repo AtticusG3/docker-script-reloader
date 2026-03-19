@@ -18,7 +18,7 @@ Windows 11 WPF app that connects to a Linux host over **SSH** (username and pass
 
 CI: GitHub Actions workflow `.github/workflows/ci.yml` builds the solution on `windows-latest` with .NET 8.
 
-**Downloads:** [GitHub Releases](https://github.com/AtticusG3/docker-script-reloader/releases) ship a self-contained **win-x64** zip per tagged version (no separate .NET install required).
+**Downloads:** [GitHub Releases](https://github.com/AtticusG3/docker-script-reloader/releases) ship a **single self-contained win-x64 `ScriptReloader.exe`** (no separate .NET install; default config is embedded; optional side-by-side `appsettings.json` still overrides if present).
 
 ## Requirements
 
@@ -34,6 +34,16 @@ dotnet run --project ScriptReloader/ScriptReloader.csproj
 ```
 
 Or open `ScriptReloader.sln` in Visual Studio and run the `ScriptReloader` project.
+
+### Portable single-file publish (release)
+
+Produces **one** `ScriptReloader.exe` (self-contained **win-x64**, compressed single-file bundle, **no PDB**):
+
+```powershell
+dotnet publish ScriptReloader/ScriptReloader.csproj -c Release -p:PublishProfile=portable-win-x64 -o ./publish
+```
+
+Output defaults are read from the **embedded** `appsettings.json`. You can still place an `appsettings.json` next to the exe to override settings without rebuilding.
 
 ## Configuration
 

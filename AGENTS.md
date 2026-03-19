@@ -15,6 +15,12 @@ dotnet restore ScriptReloader.sln
 dotnet build ScriptReloader.sln -c Release
 ```
 
+**Single-file portable publish** (self-contained `win-x64`, one `ScriptReloader.exe`, no PDB, embedded `appsettings.json` defaults):
+
+```powershell
+dotnet publish ScriptReloader/ScriptReloader.csproj -c Release -p:PublishProfile=portable-win-x64 -o ./artifacts/portable
+```
+
 There is no test project yet; CI only builds. Prefer adding tests under a `tests/` folder if you introduce testable core logic.
 
 WPF requires **Windows** to build and run. Do not assume Linux agents can compile the WPF project.
@@ -48,6 +54,7 @@ WPF requires **Windows** to build and run. Do not assume Linux agents can compil
 | Path | Role |
 |------|------|
 | `ScriptReloader/` | WPF application |
+| `ScriptReloader/Properties/PublishProfiles/portable-win-x64.pubxml` | Single-file self-contained win-x64 publish (no PDB) |
 | `ScriptReloader/Services/` | SSH + Docker remote execution, session store |
 | `ScriptReloader/Models/` | Options, DTOs, JSON converters |
 | `.github/workflows/` | CI |
