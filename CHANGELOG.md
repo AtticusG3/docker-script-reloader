@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Startup: embedded `appsettings.json` is copied to a `MemoryStream` before `ConfigurationBuilder.Build()` runs (the manifest stream was previously disposed too early, which broke single-file and other published builds).
+
 ### Changed
 
 - Windows releases are built as a **single self-contained `ScriptReloader.exe`** (publish profile `portable-win-x64`): compressed single-file, no PDB, default config embedded; optional `appsettings.json` beside the exe still overrides.
