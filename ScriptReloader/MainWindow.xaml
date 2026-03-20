@@ -77,7 +77,7 @@
                   Grid.Row="1"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  SelectionMode="Single"
+                  SelectionMode="Extended"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   HeadersVisibility="Column"
@@ -93,6 +93,14 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="RefreshButton" Content="Refresh" Width="100" Margin="0,0,8,0" IsEnabled="False" Click="RefreshButton_OnClick" />
+            <Button x:Name="RestartAllRunningButton"
+                    Content="Restart all running"
+                    Width="140"
+                    Margin="0,0,8,0"
+                    IsEnabled="False"
+                    Click="RestartAllRunningButton_OnClick" />
+            <Button x:Name="StopButton" Content="Stop selected" Width="110" Margin="0,0,8,0" IsEnabled="False" Click="StopButton_OnClick" />
+            <Button x:Name="StartButton" Content="Start selected" Width="110" Margin="0,0,8,0" IsEnabled="False" Click="StartButton_OnClick" />
             <Button x:Name="RestartButton" Content="Restart selected" Width="120" IsEnabled="False" Click="RestartButton_OnClick" />
         </StackPanel>
         </Grid>

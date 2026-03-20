@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-20
+
+### Added
+
+- **Restart all running**: confirms, then runs `docker restart $(docker ps -q)` on the remote host (via `sh` so there is no error when no containers are running).
+- Multi-select in the container grid (Ctrl/click, Shift/click). **Restart selected** runs a single remote `docker restart --time 10` with all selected container IDs/names as separate quoted arguments (one command, not one SSH exec per row).
+- **Stop selected** and **Start selected** run one remote `docker stop --time 10` or `docker start` with all selected IDs/names as separate quoted arguments (same batching model as restart).
+
+### Changed
+
+- When a remembered SSH session exists on disk, the app connects automatically on launch (if host, user, and password are available).
+
 ## [1.0.2] - 2026-03-20
 
 ### Added
@@ -29,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial public-ready release baseline: WPF app, SSH password auth, Docker list/restart, remembered session (DPAPI), configuration via appsettings and user secrets.
 
-[Unreleased]: https://github.com/AtticusG3/docker-script-reloader/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/AtticusG3/docker-script-reloader/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.1.0
 [1.0.2]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.2
 [1.0.1]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.1
 [1.0.0]: https://github.com/AtticusG3/docker-script-reloader/releases/tag/v1.0.0

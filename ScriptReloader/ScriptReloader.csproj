@@ -10,7 +10,7 @@
     <Authors>Kevyn Watkins</Authors>
     <Company>Kevyn Watkins</Company>
     <Product>Script Reloader</Product>
-    <Description>WPF app: SSH to Linux, list Docker containers, restart selected.</Description>
+    <Description>WPF app: SSH to Linux, list Docker containers, stop/start/restart selected.</Description>
   </PropertyGroup>
 
   <ItemGroup>

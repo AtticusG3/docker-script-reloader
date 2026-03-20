@@ -29,6 +29,6 @@ public sealed class ContainerInfo
         }
     }
 
-    /// <summary>Prefer container ID for <c>docker restart</c> to avoid shell metacharacters in names.</summary>
+    /// <summary>Prefer container ID for <c>docker stop</c>/<c>start</c>/<c>restart</c> to avoid shell metacharacters in names.</summary>
     public string RestartTarget => string.IsNullOrWhiteSpace(Id) ? DisplayName : Id;
 }

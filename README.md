@@ -2,7 +2,7 @@
 
 Authored by **Kevyn Watkins**.
 
-Windows 11 WPF app that connects to a Linux host over **SSH** (username and password), lists **Docker** containers, and restarts a selected container by running `docker` on the remote machine.
+Windows 11 WPF app that connects to a Linux host over **SSH** (username and password), lists **Docker** containers, and stops, starts, or restarts one or more selected containers by running `docker` on the remote machine.
 
 **Version:** semantic versioning is defined in `Directory.Build.props` (currently aligned with [CHANGELOG.md](CHANGELOG.md)).
 
@@ -115,14 +115,14 @@ You can type the password in the app each session. If the password box is empty,
 
 - **Connect** opens an SSH session and loads containers with `docker ps -a --format '{{json .}}'`.
 - **Refresh** runs the same list command again.
-- **Restart selected** runs `docker restart --time 10 '<target>'` using the container ID from the list when possible.
+- **Stop selected**, **Start selected**, and **Restart selected** each run **one** remote Docker command with every selected container as its own single-quoted argument (same as listing multiple names/IDs on one `docker stop` / `docker start` / `docker restart` line). Stop/restart use `--time 10`. Use **Ctrl** or **Shift** with clicks for multiple selection. The list uses container ID when available.
 
 If `docker` returns a non-zero exit code, the status bar and message boxes show stderr when available.
 
 ## Security notes
 
 - Prefer SSH keys and hardened SSH policy for production; this version uses password auth as requested.
-- Anyone with the app and credentials can restart containers on the target host.
+- Anyone with the app and credentials can stop, start, or restart containers on the target host.
 
 ## License
 

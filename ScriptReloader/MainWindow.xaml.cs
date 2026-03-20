@@ -24,8 +24,10 @@ public partial class MainWindow : Window
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        var hadSavedSession = false;
         if (SessionConnectionStore.TryLoad(out var savedHost, out var savedPort, out var savedUser, out var savedPassword))
         {
+            hadSavedSession = true;
             HostBox.Text = savedHost;
             PortBox.Text = savedPort > 0 ? savedPort.ToString() : "22";
             UserBox.Text = savedUser;
@@ -49,7 +51,14 @@ public partial class MainWindow : Window
             RememberConnectionCheckBox.IsChecked = false;
         }
 
-        SetStatus("Disconnected. Enter host and credentials, then Connect.");
+        if (hadSavedSession)
+        {
+            _ = AutoConnectFromSavedSessionAsync();
+        }
+        else
+        {
+            SetStatus("Disconnected. Enter host and credentials, then Connect.");
+        }
     }
 
     private void OnClosedHandler(object? sender, EventArgs e)
@@ -98,6 +107,7 @@ public partial class MainWindow : Window
         ConnectButton.IsEnabled = !busy && !connected;
         DisconnectButton.IsEnabled = !busy && connected;
         RefreshButton.IsEnabled = !busy && connected;
+        RestartAllRunningButton.IsEnabled = !busy && connected;
         HostBox.IsEnabled = !busy && !connected;
         PortBox.IsEnabled = !busy && !connected;
         UserBox.IsEnabled = !busy && !connected;
@@ -107,8 +117,11 @@ public partial class MainWindow : Window
 
     private void UpdateActionButtons()
     {
-        var hasSelection = ContainersGrid.SelectedItem is ContainerInfo;
-        RestartButton.IsEnabled = _sshDocker.IsConnected && hasSelection && RefreshButton.IsEnabled;
+        var hasSelection = ContainersGrid.SelectedItems.Count > 0;
+        var canAct = _sshDocker.IsConnected && hasSelection && RefreshButton.IsEnabled;
+        StopButton.IsEnabled = canAct;
+        StartButton.IsEnabled = canAct;
+        RestartButton.IsEnabled = canAct;
     }
 
     private bool TryParsePort(out int port)
@@ -144,6 +157,32 @@ public partial class MainWindow : Window
 
     private TimeSpan CommandTimeout => TimeSpan.FromSeconds(Math.Clamp(_defaults.CommandTimeoutSeconds, 5, 600));
 
+    private async Task AutoConnectFromSavedSessionAsync()
+    {
+        await Task.Yield();
+
+        var host = HostBox.Text.Trim();
+        var user = UserBox.Text.Trim();
+        var password = GetPassword();
+
+        if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password))
+        {
+            SetStatus("Disconnected. Saved connection needs host, user, and password. Enter missing values and Connect.");
+            return;
+        }
+
+        if (!TryParsePort(out var port))
+        {
+            SetStatus("Disconnected. Fix the port, then Connect.");
+            return;
+        }
+
+        _operationCts?.Cancel();
+        _operationCts?.Dispose();
+        _operationCts = new CancellationTokenSource();
+        await RunConnectFlowAsync(host, port, user, password, _operationCts.Token).ConfigureAwait(true);
+    }
+
     private async void ConnectButton_OnClick(object sender, RoutedEventArgs e)
     {
         var host = HostBox.Text.Trim();
@@ -167,6 +206,11 @@ public partial class MainWindow : Window
         _operationCts = new CancellationTokenSource();
         var token = _operationCts.Token;
 
+        await RunConnectFlowAsync(host, port, user, password, token).ConfigureAwait(true);
+    }
+
+    private async Task RunConnectFlowAsync(string host, int port, string user, string password, CancellationToken token)
+    {
         try
         {
             SetBusy(true);
@@ -244,6 +288,49 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void RestartAllRunningButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        const string confirmMessage =
+            "Restart every running container on the remote host? This runs: docker restart $(docker ps -q)";
+        var confirm = MessageBox.Show(
+            this,
+            confirmMessage,
+            "Restart all running",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        _operationCts?.Cancel();
+        _operationCts?.Dispose();
+        _operationCts = new CancellationTokenSource();
+        var token = _operationCts.Token;
+        try
+        {
+            SetBusy(true);
+            SetStatus("Restarting all running containers...");
+            await _sshDocker.RestartAllRunningContainersAsync(CommandTimeout, token).ConfigureAwait(true);
+            SetStatus("Refreshing...");
+            await RefreshContainersAsync(token).ConfigureAwait(true);
+            SetStatus($"Restart all running completed. {_containers.Count} container(s) listed.");
+        }
+        catch (OperationCanceledException)
+        {
+            SetStatus("Canceled.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Docker restart all", MessageBoxButton.OK, MessageBoxImage.Error);
+            SetStatus("Restart all running failed.");
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
     private async Task RefreshContainersAsync(CancellationToken cancellationToken)
     {
         var list = await _sshDocker.ListContainersAsync(CommandTimeout, cancellationToken).ConfigureAwait(true);
@@ -254,19 +341,54 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void RestartButton_OnClick(object sender, RoutedEventArgs e)
+    private static string BuildActionConfirmMessage(string verb, IReadOnlyList<ContainerInfo> items)
     {
-        if (ContainersGrid.SelectedItem is not ContainerInfo selected)
+        if (items.Count == 0)
+        {
+            return "";
+        }
+
+        if (items.Count == 1)
+        {
+            var c = items[0];
+            return $"{verb} container \"{c.DisplayName}\" ({c.RestartTarget})?";
+        }
+
+        const int maxList = 12;
+        var lines = items.Take(maxList).Select(c => $"- {c.DisplayName}");
+        var body = string.Join(Environment.NewLine, lines);
+        if (items.Count > maxList)
+        {
+            body += $"{Environment.NewLine}... and {items.Count - maxList} more.";
+        }
+
+        return $"{verb} {items.Count} containers?{Environment.NewLine}{Environment.NewLine}{body}";
+    }
+
+    /// <summary>
+    /// One SSH round-trip: <c>docker stop|start|restart</c> with every selected id/name as its own quoted argument.
+    /// </summary>
+    private async Task RunBatchedLifecycleAsync(
+        string confirmVerb,
+        string dialogTitle,
+        string progressGerund,
+        string dockerCliVerb,
+        string errorDialogTitle,
+        string failedStatusPhrase,
+        string doneSummaryNoun,
+        Func<IReadOnlyList<string>, TimeSpan, CancellationToken, Task> dockerInvoke)
+    {
+        var selected = ContainersGrid.SelectedItems.OfType<ContainerInfo>().ToList();
+        if (selected.Count == 0)
         {
             return;
         }
 
-        var target = selected.RestartTarget;
-        var name = selected.DisplayName;
+        var confirmText = BuildActionConfirmMessage(confirmVerb, selected);
         var confirm = MessageBox.Show(
             this,
-            $"Restart container \"{name}\" ({target})?",
-            "Restart",
+            confirmText,
+            dialogTitle,
             MessageBoxButton.OKCancel,
             MessageBoxImage.Question);
         if (confirm != MessageBoxResult.OK)
@@ -274,17 +396,23 @@ public partial class MainWindow : Window
             return;
         }
 
+        var targets = selected.ConvertAll(static c => c.RestartTarget);
+
         _operationCts?.Cancel();
         _operationCts?.Dispose();
         _operationCts = new CancellationTokenSource();
+        var token = _operationCts.Token;
         try
         {
             SetBusy(true);
-            SetStatus($"Restarting {name}...");
-            await _sshDocker.RestartContainerAsync(target, CommandTimeout, _operationCts.Token).ConfigureAwait(true);
-            SetStatus($"Restart issued for {name}. Refreshing...");
-            await RefreshContainersAsync(_operationCts.Token).ConfigureAwait(true);
-            SetStatus($"Done. {_containers.Count} container(s).");
+            SetStatus(
+                targets.Count == 1
+                    ? $"{progressGerund} {selected[0].DisplayName}..."
+                    : $"{progressGerund} {targets.Count} containers (one docker {dockerCliVerb})...");
+            await dockerInvoke(targets, CommandTimeout, token).ConfigureAwait(true);
+            SetStatus("Refreshing...");
+            await RefreshContainersAsync(token).ConfigureAwait(true);
+            SetStatus($"{doneSummaryNoun} issued for {targets.Count} container(s). {_containers.Count} listed.");
         }
         catch (OperationCanceledException)
         {
@@ -292,12 +420,54 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, ex.Message, "Docker restart", MessageBoxButton.OK, MessageBoxImage.Error);
-            SetStatus("Restart failed.");
+            MessageBox.Show(this, ex.Message, errorDialogTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+            SetStatus(failedStatusPhrase);
         }
         finally
         {
             SetBusy(false);
         }
+    }
+
+    private async void StopButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        await RunBatchedLifecycleAsync(
+                "Stop",
+                "Stop",
+                "Stopping",
+                "stop",
+                "Docker stop",
+                "Stop failed.",
+                "Stop",
+                (ids, to, ct) => _sshDocker.StopContainersAsync(ids, to, ct))
+            .ConfigureAwait(true);
+    }
+
+    private async void StartButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        await RunBatchedLifecycleAsync(
+                "Start",
+                "Start",
+                "Starting",
+                "start",
+                "Docker start",
+                "Start failed.",
+                "Start",
+                (ids, to, ct) => _sshDocker.StartContainersAsync(ids, to, ct))
+            .ConfigureAwait(true);
+    }
+
+    private async void RestartButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        await RunBatchedLifecycleAsync(
+                "Restart",
+                "Restart",
+                "Restarting",
+                "restart",
+                "Docker restart",
+                "Restart failed.",
+                "Restart",
+                (ids, to, ct) => _sshDocker.RestartContainersAsync(ids, to, ct))
+            .ConfigureAwait(true);
     }
 }

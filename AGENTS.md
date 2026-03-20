@@ -4,7 +4,7 @@ Instructions for coding agents and automation working on this repository.
 
 ## Project
 
-**Script Reloader** is a Windows WPF (.NET 8) desktop app. It connects to a Linux host over SSH (password), runs `docker ps` (JSON lines) and `docker restart`, and shows results in a DataGrid.
+**Script Reloader** is a Windows WPF (.NET 8) desktop app. It connects to a Linux host over SSH (password), runs `docker ps` (JSON lines) and `docker stop` / `start` / `restart`, and shows results in a DataGrid.
 
 Authored by Kevyn Watkins.
 
